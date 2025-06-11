@@ -1,0 +1,152 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Eye, EyeOff, Loader2, User, Lock } from "lucide-react"
+import { login } from "@/lib/actions/auth"
+import { useToast } from "@/hooks/use-toast"
+import Link from "next/link"
+
+export function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
+  const { toast } = useToast()
+
+  async function handleSubmit(formData: FormData) {
+    setIsLoading(true)
+    setError("")
+
+    try {
+      const result = await login(formData)
+
+      if (result.success) {
+        toast({
+          title: "Welcome back!",
+          description: "Login successful. Redirecting to your dashboard...",
+          className: "border-university-blue/20 bg-university-blue/5",
+        })
+
+        // Redirect based on role
+        switch (result.user?.role) {
+          case "student":
+            router.push("/dashboard")
+            break
+          case "admin":
+            router.push("/admin")
+            break
+          case "system_admin":
+            router.push("/admin")
+            break
+          default:
+            router.push("/dashboard")
+        }
+      } else {
+        setError(result.error || "Login failed")
+      }
+    } catch (error) {
+      setError("An unexpected error occurred")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <form action={handleSubmit} className="space-y-5">
+      {error && (
+        <Alert variant="destructive" className="border-red-200 bg-red-50 animate-fade-in">
+          <AlertDescription className="text-red-800">{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="identifier" className="text-university-gray-700 font-medium text-sm">
+            Registration Number / Email
+          </Label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-university-gray-400 h-4 w-4" />
+            <Input
+              id="identifier"
+              name="identifier"
+              type="text"
+              placeholder="REG/2024/001 or admin@staustin.edu"
+              required
+              disabled={isLoading}
+              className="pl-10 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-university-gray-700 font-medium text-sm">
+            Password
+          </Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-university-gray-400 h-4 w-4" />
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              required
+              disabled={isLoading}
+              className="pl-10 pr-11 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-university-gray-100 text-university-gray-500 hover:text-university-gray-700"
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Signing in...
+          </>
+        ) : (
+          "Sign In"
+        )}
+      </Button>
+
+      <div className="text-center">
+        <Link
+          href="/forgot-password"
+          className="text-university-blue hover:text-university-blue-dark font-medium text-sm transition-colors duration-200 hover:underline"
+        >
+          Forgot your password?
+        </Link>
+      </div>
+
+      {/* Demo credentials info */}
+      <div className="mt-5 p-3 bg-university-blue/5 rounded-lg border border-university-blue/10">
+        <p className="text-xs text-university-gray-600 font-medium mb-2">Demo Credentials:</p>
+        <div className="text-xs text-university-gray-500 space-y-1">
+          <p>
+            <span className="font-medium">Student:</span> REG/2024/001 / password123
+          </p>
+          <p>
+            <span className="font-medium">Admin:</span> admin@staustin.edu / admin123
+          </p>
+          <p>
+            <span className="font-medium">System Admin:</span> sysadmin@staustin.edu / sysadmin123
+          </p>
+        </div>
+      </div>
+    </form>
+  )
+}
