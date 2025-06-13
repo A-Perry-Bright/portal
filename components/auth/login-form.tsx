@@ -18,46 +18,57 @@ export function LoginForm() {
   const router = useRouter()
   const { toast } = useToast()
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setIsLoading(true)
     setError("")
 
     try {
+      const formData = new FormData(event.currentTarget)
       const result = await login(formData)
 
-      if (result.success) {
+      console.log("Login result:", result)
+
+      if (result.success && result.user) {
         toast({
           title: "Welcome back!",
           description: "Login successful. Redirecting to your dashboard...",
           className: "border-university-blue/20 bg-university-blue/5",
         })
 
-        // Redirect based on role
-        switch (result.user?.role) {
-          case "student":
-            router.push("/dashboard")
-            break
-          case "admin":
-            router.push("/admin")
-            break
-          case "system_admin":
-            router.push("/admin")
-            break
-          default:
-            router.push("/dashboard")
-        }
+        // Small delay to show the toast
+        setTimeout(() => {
+          // Redirect based on role
+          switch (result.user?.role) {
+            case "student":
+              router.push("/dashboard")
+              break
+            case "admin":
+              router.push("/admin")
+              break
+            case "system_admin":
+              router.push("/admin")
+              break
+            default:
+              router.push("/dashboard")
+          }
+          
+          // Force a page refresh to ensure session is properly loaded
+          window.location.reload()
+        }, 1000)
       } else {
         setError(result.error || "Login failed")
       }
     } catch (error) {
-      setError("An unexpected error occurred")
+      console.error("Login error:", error)
+      setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <Alert variant="destructive" className="border-red-200 bg-red-50 animate-fade-in">
           <AlertDescription className="text-red-800">{error}</AlertDescription>

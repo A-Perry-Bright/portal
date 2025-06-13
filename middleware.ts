@@ -4,6 +4,8 @@ export function middleware(request: NextRequest) {
   const session = request.cookies.get("session")
   const { pathname } = request.nextUrl
 
+  console.log("Middleware - Path:", pathname, "Session exists:", !!session)
+
   // Public routes that don't require authentication
   const publicRoutes = ["/login", "/forgot-password"]
 
@@ -12,6 +14,7 @@ export function middleware(request: NextRequest) {
 
   // If user is not authenticated and trying to access protected route
   if (!session && !isPublicRoute) {
+    console.log("Redirecting to login - no session")
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
@@ -21,6 +24,8 @@ export function middleware(request: NextRequest) {
       const sessionData = JSON.parse(session.value)
       const userRole = sessionData.user.role
 
+      console.log("User authenticated, redirecting based on role:", userRole)
+
       // Redirect based on role
       if (userRole === "student") {
         return NextResponse.redirect(new URL("/dashboard", request.url))
@@ -28,6 +33,7 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/admin", request.url))
       }
     } catch (error) {
+      console.error("Error parsing session:", error)
       // If session is invalid, allow access to login
       return NextResponse.next()
     }

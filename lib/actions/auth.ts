@@ -4,34 +4,51 @@ import { redirect } from "next/navigation"
 import { validateCredentials, createSession, deleteSession } from "@/lib/auth"
 
 export async function login(formData: FormData) {
-  const identifier = formData.get("identifier") as string
-  const password = formData.get("password") as string
+  try {
+    const identifier = formData.get("identifier") as string
+    const password = formData.get("password") as string
 
-  if (!identifier || !password) {
+    console.log("Login attempt:", { identifier, password: password ? "***" : "empty" })
+
+    if (!identifier || !password) {
+      return {
+        success: false,
+        error: "Please provide both identifier and password",
+      }
+    }
+
+    const user = validateCredentials(identifier, password)
+    console.log("User validation result:", user ? "success" : "failed")
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Invalid credentials. Please check your registration number/email and password.",
+      }
+    }
+
+    await createSession(user)
+    console.log("Session created for user:", user.id)
+
+    return {
+      success: true,
+      user,
+    }
+  } catch (error) {
+    console.error("Login error:", error)
     return {
       success: false,
-      error: "Please provide both identifier and password",
+      error: "An unexpected error occurred. Please try again.",
     }
-  }
-
-  const user = validateCredentials(identifier, password)
-
-  if (!user) {
-    return {
-      success: false,
-      error: "Invalid credentials",
-    }
-  }
-
-  await createSession(user)
-
-  return {
-    success: true,
-    user,
   }
 }
 
 export async function logout() {
-  await deleteSession()
-  redirect("/login")
+  try {
+    await deleteSession()
+    redirect("/login")
+  } catch (error) {
+    console.error("Logout error:", error)
+    redirect("/login")
+  }
 }

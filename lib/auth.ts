@@ -41,53 +41,80 @@ const mockUsers = {
 }
 
 export async function getSession(): Promise<Session | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get("session")
-
-  if (!sessionCookie) {
-    return null
-  }
-
   try {
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.get("session")
+
+    if (!sessionCookie?.value) {
+      return null
+    }
+
     // In a real app, you would decrypt and validate the session
     const session = JSON.parse(sessionCookie.value)
+    
+    // Check if session is expired
+    if (new Date(session.expires) < new Date()) {
+      await deleteSession()
+      return null
+    }
+    
     return session
-  } catch {
+  } catch (error) {
+    console.error("Error getting session:", error)
     return null
   }
 }
 
 export async function createSession(user: User) {
-  const session: Session = {
-    user,
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+  try {
+    const session: Session = {
+      user,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+    }
+
+    const cookieStore = await cookies()
+    cookieStore.set("session", JSON.stringify(session), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: "/",
+    })
+
+    return session
+  } catch (error) {
+    console.error("Error creating session:", error)
+    throw new Error("Failed to create session")
   }
-
-  const cookieStore = await cookies()
-  cookieStore.set("session", JSON.stringify(session), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 24 * 60 * 60, // 24 hours
-  })
-
-  return session
 }
 
 export async function deleteSession() {
-  const cookieStore = await cookies()
-  cookieStore.delete("session")
+  try {
+    const cookieStore = await cookies()
+    cookieStore.delete("session")
+  } catch (error) {
+    console.error("Error deleting session:", error)
+  }
 }
 
 export function validateCredentials(identifier: string, password: string): User | null {
-  const user = mockUsers[identifier as keyof typeof mockUsers]
+  try {
+    // Normalize identifier (trim whitespace and convert to lowercase for email)
+    const normalizedIdentifier = identifier.trim()
+    
+    // Check if it's a registration number or email
+    const user = mockUsers[normalizedIdentifier as keyof typeof mockUsers]
 
-  if (user && user.password === password) {
-    const { password: _, ...userWithoutPassword } = user
-    return userWithoutPassword
+    if (user && user.password === password) {
+      const { password: _, ...userWithoutPassword } = user
+      return userWithoutPassword
+    }
+
+    return null
+  } catch (error) {
+    console.error("Error validating credentials:", error)
+    return null
   }
-
-  return null
 }
 
 export async function requireAuth() {
@@ -104,7 +131,7 @@ export async function requireRole(allowedRoles: string[]) {
   const session = await requireAuth()
 
   if (!allowedRoles.includes(session.user.role)) {
-    redirect("/unauthorized")
+    redirect("/login")
   }
 
   return session
