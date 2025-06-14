@@ -28,6 +28,7 @@ export default function ForgotPasswordPage() {
                   alt="St. Austin's University Logo"
                   width={64}
                   height={64}
+                  sizes="64px"
                   className="w-16 h-16 object-contain"
                 />
               </div>
