@@ -1,6 +1,9 @@
 import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Image from "next/image"
+import dynamic from "next/dynamic"
+
+// Dynamically import Image with SSR disabled to prevent hydration mismatch
+const Image = dynamic(() => import("next/image"), { ssr: false })
 
 export default function LoginPage() {
   return (
