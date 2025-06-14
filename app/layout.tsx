@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "St. Austin's Student Portal",
   description: "Student Portal for St. Austin's Bilingual University Institute of Science and Technology",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({

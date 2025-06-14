@@ -27,8 +27,6 @@ export function LoginForm() {
       const formData = new FormData(event.currentTarget)
       const result = await login(formData)
 
-      console.log("Login result:", result)
-
       if (result.success && result.user) {
         toast({
           title: "Welcome back!",
@@ -36,25 +34,19 @@ export function LoginForm() {
           className: "border-university-blue/20 bg-university-blue/5",
         })
 
-        // Small delay to show the toast
+        // Small delay to show the toast, then redirect
         setTimeout(() => {
-          // Redirect based on role
           switch (result.user?.role) {
             case "student":
               router.push("/dashboard")
               break
             case "admin":
-              router.push("/admin")
-              break
             case "system_admin":
               router.push("/admin")
               break
             default:
               router.push("/dashboard")
           }
-          
-          // Force a page refresh to ensure session is properly loaded
-          window.location.reload()
         }, 1000)
       } else {
         setError(result.error || "Login failed")

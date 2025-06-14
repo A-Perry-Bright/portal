@@ -58,9 +58,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <Image
                   src="/images/sabuist-logo.png"
                   alt="St. Austin's University Logo"
-                  width={40}
-                  height={40}
+                  width={48}
+                  height={48}
                   className="w-8 h-8 sm:w-12 sm:h-12 object-contain"
+                  priority
                 />
               </div>
               <div className="min-w-0 flex-1">
@@ -107,7 +108,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-university-blue/10 transition-colors duration-200"
                 >
                   <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border-2 border-university-blue/20">
-                    <AvatarImage src="/placeholder.svg?height=40&width=40" alt={user.name} />
+                    <AvatarImage src="/placeholder-user.jpg" alt={user.name} />
                     <AvatarFallback className="bg-university-gradient text-white font-semibold text-xs sm:text-sm">
                       {user.name
                         .split(" ")
@@ -126,7 +127,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <DropdownMenuLabel className="font-normal p-3 sm:p-4 bg-university-blue/5 rounded-lg mb-2 border border-university-blue/10">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-university-blue/20 flex-shrink-0">
-                      <AvatarImage src="/placeholder.svg?height=48&width=48" alt={user.name} />
+                      <AvatarImage src="/placeholder-user.jpg" alt={user.name} />
                       <AvatarFallback className="bg-university-gradient text-white font-semibold text-sm">
                         {user.name
                           .split(" ")

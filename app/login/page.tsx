@@ -28,7 +28,7 @@ export default function LoginPage() {
                   width={64}
                   height={64}
                   className="w-16 h-16 object-contain"
-                  suppressHydrationWarning
+                  priority
                 />
               </div>
             </div>
