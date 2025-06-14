@@ -1,8 +1,5 @@
 "use server"
 
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-
 export interface User {
   id: string
   name: string
@@ -44,6 +41,7 @@ const mockUsers = {
 
 export async function getSession(): Promise<Session | null> {
   try {
+    const { cookies } = await import("next/headers")
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get("session")
 
@@ -74,6 +72,7 @@ export async function createSession(user: User) {
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
     }
 
+    const { cookies } = await import("next/headers")
     const cookieStore = await cookies()
     cookieStore.set("session", JSON.stringify(session), {
       httpOnly: true,
@@ -92,6 +91,7 @@ export async function createSession(user: User) {
 
 export async function deleteSession() {
   try {
+    const { cookies } = await import("next/headers")
     const cookieStore = await cookies()
     cookieStore.delete("session")
   } catch (error) {
@@ -123,6 +123,7 @@ export async function requireAuth() {
   const session = await getSession()
 
   if (!session) {
+    const { redirect } = await import("next/navigation")
     redirect("/login")
   }
 
@@ -133,6 +134,7 @@ export async function requireRole(allowedRoles: string[]) {
   const session = await requireAuth()
 
   if (!allowedRoles.includes(session.user.role)) {
+    const { redirect } = await import("next/navigation")
     redirect("/login")
   }
 
