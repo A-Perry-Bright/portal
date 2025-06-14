@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useFormState, useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,59 +12,89 @@ import { login } from "@/lib/actions/auth"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 
-export function LoginForm() {
+function SubmitButton() {
+  const { pending } = useFormStatus()
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-university-gray-700 font-medium text-sm">
+          Password
+        </Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-university-gray-400 h-4 w-4" />
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter your password"
+            required
+            disabled={pending}
+            className="pl-10 pr-11 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-university-gray-100 text-university-gray-500 hover:text-university-gray-700"
+            onClick={() => setShowPassword(!showPassword)}
+            disabled={pending}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled={pending}>
+        {pending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Signing in...
+          </>
+        ) : (
+          "Sign In"
+        )}
+      </Button>
+    </>
+  )
+}
+
+export function LoginForm() {
+  const [state, formAction] = useFormState(login, { success: false, error: "" })
   const router = useRouter()
   const { toast } = useToast()
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsLoading(true)
-    setError("")
+  useEffect(() => {
+    if (state.success && state.user) {
+      toast({
+        title: "Welcome back!",
+        description: "Login successful. Redirecting to your dashboard...",
+        className: "border-university-blue/20 bg-university-blue/5",
+      })
 
-    try {
-      const formData = new FormData(event.currentTarget)
-      const result = await login(formData)
-
-      if (result.success && result.user) {
-        toast({
-          title: "Welcome back!",
-          description: "Login successful. Redirecting to your dashboard...",
-          className: "border-university-blue/20 bg-university-blue/5",
-        })
-
-        // Small delay to show the toast, then redirect
-        setTimeout(() => {
-          switch (result.user?.role) {
-            case "student":
-              router.push("/dashboard")
-              break
-            case "admin":
-            case "system_admin":
-              router.push("/admin")
-              break
-            default:
-              router.push("/dashboard")
-          }
-        }, 1000)
-      } else {
-        setError(result.error || "Login failed")
-      }
-    } catch (error) {
-      console.error("Login error:", error)
-      setError("An unexpected error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
+      // Small delay to show the toast, then redirect
+      setTimeout(() => {
+        switch (state.user?.role) {
+          case "student":
+            router.push("/dashboard")
+            break
+          case "admin":
+          case "system_admin":
+            router.push("/admin")
+            break
+          default:
+            router.push("/dashboard")
+        }
+      }, 1000)
     }
-  }
+  }, [state, router, toast])
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
+    <form action={formAction} className="space-y-5">
+      {state.error && (
         <Alert variant="destructive" className="border-red-200 bg-red-50 animate-fade-in">
-          <AlertDescription className="text-red-800">{error}</AlertDescription>
+          <AlertDescription className="text-red-800">{state.error}</AlertDescription>
         </Alert>
       )}
 
@@ -80,51 +111,13 @@ export function LoginForm() {
               type="text"
               placeholder="REG/2024/001 or admin@staustin.edu"
               required
-              disabled={isLoading}
               className="pl-10 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-university-gray-700 font-medium text-sm">
-            Password
-          </Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-university-gray-400 h-4 w-4" />
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              required
-              disabled={isLoading}
-              className="pl-10 pr-11 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-university-gray-100 text-university-gray-500 hover:text-university-gray-700"
-              onClick={() => setShowPassword(!showPassword)}
-              disabled={isLoading}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
+        <SubmitButton />
       </div>
-
-      <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Signing in...
-          </>
-        ) : (
-          "Sign In"
-        )}
-      </Button>
 
       <div className="text-center">
         <Link

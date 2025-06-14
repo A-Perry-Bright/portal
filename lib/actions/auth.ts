@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { validateCredentials } from "@/lib/auth"
 import { createSession, deleteSession } from "@/lib/auth-server"
 
-export async function login(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const identifier = formData.get("identifier") as string
   const password = formData.get("password") as string
 
