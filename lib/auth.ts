@@ -1,6 +1,7 @@
 "use server"
 
 import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
 
 export interface User {
   id: string
@@ -42,7 +43,6 @@ const mockUsers = {
 }
 
 export async function getSession(): Promise<Session | null> {
-  const { cookies } = await import("next/headers")
   const cookieStore = await cookies()
   const sessionCookie = cookieStore.get("session")
 
@@ -60,7 +60,6 @@ export async function getSession(): Promise<Session | null> {
 }
 
 export async function createSession(user: User) {
-  const { cookies } = await import("next/headers")
   const session: Session = {
     user,
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
@@ -78,7 +77,6 @@ export async function createSession(user: User) {
 }
 
 export async function deleteSession() {
-  const { cookies } = await import("next/headers")
   const cookieStore = await cookies()
   cookieStore.delete("session")
 }
