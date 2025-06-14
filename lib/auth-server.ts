@@ -19,23 +19,6 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-export async function createSession(user: User) {
-  const session: Session = {
-    user,
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-  }
-
-  const cookieStore = await cookies()
-  cookieStore.set("session", JSON.stringify(session), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 24 * 60 * 60, // 24 hours
-  })
-
-  return session
-}
-
 export async function deleteSession() {
   const cookieStore = await cookies()
   cookieStore.delete("session")
