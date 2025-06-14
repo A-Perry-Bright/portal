@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { getSession } from "@/lib/auth"
+import { getSession } from "@/lib/auth-server"
 import { StudentDashboard } from "@/components/dashboard/student-dashboard"
 
 export default async function DashboardPage() {
