@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useFormState, useFormStatus } from "react-dom"
+import { useActionState, useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -61,7 +61,7 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(login, { success: false, error: "" })
+  const [state, formAction] = useActionState(login, { success: false, error: "" })
   const router = useRouter()
   const { toast } = useToast()
 

@@ -409,7 +409,7 @@ function OverviewContent({ studentData }: { studentData: any }) {
                       <div className="flex items-center gap-2">
                         <Clock className="h-3 w-3 text-university-gray-400" />
                         <span className="text-xs text-university-gray-500">
-                          {new Date(announcement.date).toLocaleDateString()}
+                          {announcement.date}
                         </span>
                       </div>
                       <ChevronRight className="h-4 w-4 text-university-gray-400 group-hover/item:text-university-blue transition-colors duration-200" />

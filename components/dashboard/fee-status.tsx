@@ -174,7 +174,7 @@ export function FeeStatus({ studentData }: FeeStatusProps) {
                 {studentData.paymentHistory.map((payment, index) => (
                   <TableRow key={index} className="border-university-gray-200 hover:bg-university-gray-50 bg-white">
                     <TableCell className="text-university-gray-700 font-medium">
-                      {new Date(payment.date).toLocaleDateString()}
+                      {payment.date}
                     </TableCell>
                     <TableCell className="text-university-gray-700 font-semibold">
                       {formatXAF(payment.amount)}

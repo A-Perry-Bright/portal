@@ -216,7 +216,7 @@ export function FeeManagement() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-university-gray-700">
-                      {new Date(record.lastPayment).toLocaleDateString()}
+                      {record.lastPayment}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

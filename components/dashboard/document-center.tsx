@@ -288,7 +288,7 @@ export function DocumentCenter() {
                       <div className="flex items-center justify-between text-sm text-university-gray-500 mb-4 p-3 bg-university-gray-50 rounded-lg">
                         <span className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-university-blue/60" />
-                          {new Date(document.uploadDate).toLocaleDateString()}
+                          {document.uploadDate}
                         </span>
                         <span className="font-medium text-university-gray-600">{document.size}</span>
                       </div>
@@ -452,7 +452,7 @@ export function DocumentCenter() {
                           </TableCell>
                           <TableCell className="text-university-gray-700">{document.size}</TableCell>
                           <TableCell className="text-university-gray-700">
-                            {new Date(document.uploadDate).toLocaleDateString()}
+                            {document.uploadDate}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">

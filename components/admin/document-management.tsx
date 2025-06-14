@@ -249,7 +249,7 @@ export function DocumentManagement() {
                     </TableCell>
                     <TableCell className="text-university-gray-700">{document.size}</TableCell>
                     <TableCell className="text-university-gray-700">
-                      {new Date(document.uploadDate).toLocaleDateString()}
+                      {document.uploadDate}
                     </TableCell>
                     <TableCell className="text-university-gray-700">{document.uploadedBy}</TableCell>
                     <TableCell className="text-university-gray-700 font-medium">{document.downloads}</TableCell>
