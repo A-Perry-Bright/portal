@@ -15,18 +15,42 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [formData, setFormData] = useState({
+    identifier: "",
+    password: ""
+  })
   const router = useRouter()
   const { toast } = useToast()
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    // Clear error when user starts typing
+    if (error) {
+      setError("")
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsLoading(true)
     setError("")
 
-    const formData = new FormData(e.currentTarget)
-
     try {
-      const result = await login(formData)
+      // Validate form data
+      if (!formData.identifier.trim() || !formData.password.trim()) {
+        setError("Please fill in all fields")
+        return
+      }
+
+      const formDataObj = new FormData()
+      formDataObj.append("identifier", formData.identifier.trim())
+      formDataObj.append("password", formData.password)
+
+      const result = await login(formDataObj)
 
       if (result.success) {
         toast({
@@ -35,25 +59,27 @@ export function LoginForm() {
           className: "border-university-blue/20 bg-university-blue/5",
         })
 
-        // Redirect based on role
-        switch (result.user?.role) {
-          case "student":
-            router.push("/dashboard")
-            break
-          case "admin":
-            router.push("/admin")
-            break
-          case "system_admin":
-            router.push("/admin")
-            break
-          default:
-            router.push("/dashboard")
-        }
+        // Small delay to show the toast
+        setTimeout(() => {
+          // Redirect based on role
+          switch (result.user?.role) {
+            case "student":
+              router.push("/dashboard")
+              break
+            case "admin":
+            case "system_admin":
+              router.push("/admin")
+              break
+            default:
+              router.push("/dashboard")
+          }
+        }, 500)
       } else {
-        setError(result.error || "Login failed")
+        setError(result.error || "Login failed. Please try again.")
       }
     } catch (error) {
-      setError("An unexpected error occurred")
+      console.error("Login error:", error)
+      setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -79,6 +105,8 @@ export function LoginForm() {
               name="identifier"
               type="text"
               placeholder="REG/2024/001 or admin@staustin.edu"
+              value={formData.identifier}
+              onChange={handleInputChange}
               required
               disabled={isLoading}
               className="pl-10 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
@@ -97,6 +125,8 @@ export function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleInputChange}
               required
               disabled={isLoading}
               className="pl-10 pr-11 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
@@ -144,6 +174,9 @@ export function LoginForm() {
           </p>
           <p>
             <span className="font-medium">Admin:</span> admin@staustin.edu / admin123
+          </p>
+          <p>
+            <span className="font-medium">Perry Bright:</span> perry-bright@st-austin.edu.cm / password123
           </p>
           <p>
             <span className="font-medium">System Admin:</span> sysadmin@staustin.edu / sysadmin123
