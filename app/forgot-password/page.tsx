@@ -1,7 +1,10 @@
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import Image from "next/image"
+import dynamic from "next/dynamic"
+
+// Dynamically import Image with SSR disabled to prevent hydration mismatch
+const Image = dynamic(() => import("next/image"), { ssr: false })
 
 export default function ForgotPasswordPage() {
   return (

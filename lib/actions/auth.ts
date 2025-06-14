@@ -1,6 +1,7 @@
 "use server"
 
 import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
 import { validateCredentials, createSession, deleteSession } from "@/lib/auth"
 
 interface LoginResult {
@@ -39,8 +40,18 @@ export async function login(formData: FormData): Promise<LoginResult> {
       }
     }
 
-    // Create session
-    await createSession(user)
+    // Create session object
+    const session = createSession(user)
+
+    // Set the session cookie directly in the Server Action
+    const cookieStore = await cookies()
+    cookieStore.set("session", JSON.stringify(session), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: "/",
+    })
 
     return {
       success: true,
