@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,12 +18,15 @@ export function LoginForm() {
   const router = useRouter()
   const { toast } = useToast()
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setIsLoading(true)
     setError("")
 
+    const formData = new FormData(e.currentTarget)
+
     try {
-      const result = await login(null, formData)
+      const result = await login(formData)
 
       if (result.success) {
         toast({
@@ -57,7 +60,7 @@ export function LoginForm() {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <Alert variant="destructive" className="border-red-200 bg-red-50 animate-fade-in">
           <AlertDescription className="text-red-800">{error}</AlertDescription>

@@ -1,12 +1,9 @@
 "use server"
 
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { validateCredentials } from "@/lib/auth"
-import { deleteSession } from "@/lib/auth-server"
-import type { User, Session } from "@/lib/auth"
+import { validateCredentials, createSession, deleteSession } from "@/lib/auth"
 
-export async function login(prevState: any, formData: FormData) {
+export async function login(formData: FormData) {
   const identifier = formData.get("identifier") as string
   const password = formData.get("password") as string
 
@@ -26,19 +23,7 @@ export async function login(prevState: any, formData: FormData) {
     }
   }
 
-  // Create session directly in the server action context
-  const session: Session = {
-    user,
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-  }
-
-  const cookieStore = await cookies()
-  cookieStore.set("session", JSON.stringify(session), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 24 * 60 * 60, // 24 hours
-  })
+  await createSession(user)
 
   return {
     success: true,
