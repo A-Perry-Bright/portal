@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useFormState, useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,15 +12,27 @@ import { login } from "@/lib/actions/auth"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  
+  return (
+    <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled={pending}>
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Signing in...
+        </>
+      ) : (
+        "Sign In"
+      )}
+    </Button>
+  )
+}
+
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [formData, setFormData] = useState({
-    identifier: "",
-    password: ""
-  })
   const [isClient, setIsClient] = useState(false)
+  const [state, formAction] = useFormState(login, { success: false, error: "" })
   const router = useRouter()
   const { toast } = useToast()
 
@@ -28,68 +41,32 @@ export function LoginForm() {
     setIsClient(true)
   }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-    // Clear error when user starts typing
-    if (error) {
-      setError("")
+  // Handle successful login
+  useEffect(() => {
+    if (state.success && state.user) {
+      toast({
+        title: "Welcome back!",
+        description: "Login successful. Redirecting to your dashboard...",
+        className: "border-university-blue/20 bg-university-blue/5",
+      })
+
+      // Small delay to show the toast
+      setTimeout(() => {
+        // Redirect based on role
+        switch (state.user.role) {
+          case "student":
+            router.push("/dashboard")
+            break
+          case "admin":
+          case "system_admin":
+            router.push("/admin")
+            break
+          default:
+            router.push("/dashboard")
+        }
+      }, 500)
     }
-  }
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    try {
-      // Validate form data
-      if (!formData.identifier.trim() || !formData.password.trim()) {
-        setError("Please fill in all fields")
-        return
-      }
-
-      const formDataObj = new FormData()
-      formDataObj.append("identifier", formData.identifier.trim())
-      formDataObj.append("password", formData.password)
-
-      const result = await login(formDataObj)
-
-      if (result.success) {
-        toast({
-          title: "Welcome back!",
-          description: "Login successful. Redirecting to your dashboard...",
-          className: "border-university-blue/20 bg-university-blue/5",
-        })
-
-        // Small delay to show the toast
-        setTimeout(() => {
-          // Redirect based on role
-          switch (result.user?.role) {
-            case "student":
-              router.push("/dashboard")
-              break
-            case "admin":
-            case "system_admin":
-              router.push("/admin")
-              break
-            default:
-              router.push("/dashboard")
-          }
-        }, 500)
-      } else {
-        setError(result.error || "Login failed. Please try again.")
-      }
-    } catch (error) {
-      console.error("Login error:", error)
-      setError("An unexpected error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  }, [state.success, state.user, router, toast])
 
   // Prevent hydration mismatch by not rendering interactive elements until client-side
   if (!isClient) {
@@ -139,10 +116,10 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
+    <form action={formAction} className="space-y-5">
+      {state.error && (
         <Alert variant="destructive" className="border-red-200 bg-red-50 animate-fade-in">
-          <AlertDescription className="text-red-800">{error}</AlertDescription>
+          <AlertDescription className="text-red-800">{state.error}</AlertDescription>
         </Alert>
       )}
 
@@ -158,10 +135,7 @@ export function LoginForm() {
               name="identifier"
               type="text"
               placeholder="REG/2024/001 or admin@staustin.edu"
-              value={formData.identifier}
-              onChange={handleInputChange}
               required
-              disabled={isLoading}
               className="pl-10 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
             />
           </div>
@@ -178,10 +152,7 @@ export function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleInputChange}
               required
-              disabled={isLoading}
               className="pl-10 pr-11 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
             />
             <Button
@@ -190,7 +161,6 @@ export function LoginForm() {
               size="sm"
               className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-university-gray-100 text-university-gray-500 hover:text-university-gray-700"
               onClick={() => setShowPassword(!showPassword)}
-              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
@@ -198,16 +168,7 @@ export function LoginForm() {
         </div>
       </div>
 
-      <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Signing in...
-          </>
-        ) : (
-          "Sign In"
-        )}
-      </Button>
+      <SubmitButton />
 
       <div className="text-center">
         <Link
