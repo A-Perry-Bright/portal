@@ -4,7 +4,12 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 
 // Dynamically import Image with SSR disabled to prevent hydration mismatch
-const Image = dynamic(() => import("next/image"), { ssr: false })
+const Image = dynamic(() => import("next/image"), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-16 h-16 bg-university-blue/10 rounded-2xl animate-pulse" />
+  )
+})
 
 export default function ForgotPasswordPage() {
   return (
@@ -33,6 +38,7 @@ export default function ForgotPasswordPage() {
                   height={64}
                   sizes="64px"
                   className="w-16 h-16 object-contain"
+                  priority={false}
                 />
               </div>
             </div>

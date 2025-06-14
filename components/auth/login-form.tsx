@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,8 +19,14 @@ export function LoginForm() {
     identifier: "",
     password: ""
   })
+  const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+
+  // Ensure client-side rendering for interactive elements
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -83,6 +89,53 @@ export function LoginForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Prevent hydration mismatch by not rendering interactive elements until client-side
+  if (!isClient) {
+    return (
+      <form className="space-y-5">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="identifier" className="text-university-gray-700 font-medium text-sm">
+              Registration Number / Email
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-university-gray-400 h-4 w-4" />
+              <Input
+                id="identifier"
+                name="identifier"
+                type="text"
+                placeholder="REG/2024/001 or admin@staustin.edu"
+                className="pl-10 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-university-gray-700 font-medium text-sm">
+              Password
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-university-gray-400 h-4 w-4" />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                className="pl-10 pr-11 h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+
+        <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled>
+          Sign In
+        </Button>
+      </form>
+    )
   }
 
   return (

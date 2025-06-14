@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +12,13 @@ export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const { toast } = useToast()
+
+  // Ensure client-side rendering for interactive elements
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,6 +34,31 @@ export function ForgotPasswordForm() {
         className: "border-university-blue/20 bg-university-blue/5",
       })
     }, 2000)
+  }
+
+  // Prevent hydration mismatch by not rendering interactive elements until client-side
+  if (!isClient) {
+    return (
+      <form className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-university-gray-700 font-medium text-sm">
+            Email Address
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Enter your email address"
+            className="h-11 university-input focus-university border-university-gray-300 bg-white text-sm"
+            disabled
+          />
+        </div>
+
+        <Button type="submit" className="w-full h-11 university-button text-sm font-semibold" disabled>
+          Send Reset Link
+        </Button>
+      </form>
+    )
   }
 
   if (isSubmitted) {

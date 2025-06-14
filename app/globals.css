@@ -107,6 +107,21 @@
   animation: pulse-university 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Prevent hydration mismatch for dynamic content */
+.hydration-safe {
+  opacity: 0;
+  animation: fade-in-delayed 0.1s ease-in-out 0.1s forwards;
+}
+
+@keyframes fade-in-delayed {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
